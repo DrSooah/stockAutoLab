@@ -1,7 +1,6 @@
 import yfinance as yf
 import requests
 from datetime import datetime, timedelta, timezone
-import os
 
 # ===== 설정 =====
 TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW", "PLTW", "NVDW", "XDTE", "QDTE"]  # 분석할 종목 리스트
