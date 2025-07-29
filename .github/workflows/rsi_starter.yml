@@ -35,8 +35,6 @@ on:
 jobs:
   rsi-alert:
     runs-on: ubuntu-latest
-    env:
-      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
     steps:
     - name: Checkout repository
