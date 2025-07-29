@@ -1,10 +1,11 @@
 import yfinance as yf
 import requests
 from datetime import datetime, timedelta, timezone
+import os
 
 # ===== 설정 =====
 TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW", "PLTW", "NVDW", "XDTE", "QDTE"]  # 분석할 종목 리스트
-WEBHOOK_URL = "https://discord.com/api/webhooks/1399780317254127797/xi1lBDb981_I5dALDLkqAxnYKR9_W_Up6u2LntUppc214_Uwun0gStaorJZo1Z91BaQc"
+WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 RSI_PERIOD = 14
 # ===============
 
