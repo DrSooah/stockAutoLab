@@ -1,1 +1,26 @@
+name: RSI Discord Alert
 
+on:
+  schedule:
+    - cron: '0 23 * * *'  # UTC 기준 → 한국 시간 오전 8시 (UTC+9)
+  workflow_dispatch:       # 수동 실행 버튼도 활성화
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        pip install yfinance requests
+
+    - name: Run RSI script
+      run: python finance.py
