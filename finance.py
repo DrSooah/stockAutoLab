@@ -3,12 +3,12 @@ import requests
 from datetime import datetime, timedelta, timezone
 
 # ===== 설정 =====
-TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW", "PLTW", "NVDW", "XDTE", "QDTE", "VZ", "PFE", "JEPQ", "CVX", "XOVR", "GOOW", "METW", "AMDW", "AVGW", "AMZW", "MSFW", "MSFW", "HOOW"]  # 분석할 종목 리스트
+TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW", "PLTW", "NVDW", "XDTE", "QDTE", "VZ", "PFE", "JEPQ", "CVX", "XOVR", "GOOW", "METW", "AMDW", "AVGW", "AMZW", "MSFW", "MSFW", "HOOW"]
 WEBHOOK_URL = "https://discord.com/api/webhooks/1399780317254127797/xi1lBDb981_I5dALDLkqAxnYKR9_W_Up6u2LntUppc214_Uwun0gStaorJZo1Z91BaQc"
-RSI_PERIOD = 14
+RSI_PERIODS = [7, 14, 21]
 # ===============
 
-def calculate_rsi(data, period=14):
+def calculate_rsi(data, period):
     delta = data['Close'].diff()
     gain = delta.where(delta > 0, 0.0)
     loss = -delta.where(delta < 0, 0.0)
@@ -31,29 +31,40 @@ def analyze_ticker(ticker):
         if data.empty:
             return f"⚠️ {ticker}: 데이터 없음"
 
-        data['RSI'] = calculate_rsi(data)
-        latest_rsi = data['RSI'].iloc[-1]
+        rsi_values = {}
+        signal_count = {"overbought": 0, "oversold": 0}
 
-        message = f"[{ticker}] RSI: {latest_rsi:.2f}"
+        for period in RSI_PERIODS:
+            data[f'RSI_{period}'] = calculate_rsi(data, period)
+            latest_rsi = data[f'RSI_{period}'].iloc[-1]
+            rsi_values[period] = latest_rsi
 
-        if latest_rsi < 30:
-            message += " ⛔ 과매도 구간!"
-            send_discord_message(f"📉 {ticker}:\tRSI {latest_rsi:.2f} (과매도)")
-        elif latest_rsi > 70:
-            message += " 🚀 과매수 구간!"
-            send_discord_message(f"📈 {ticker}:\tRSI {latest_rsi:.2f} (과매수)")
+            if latest_rsi > 70:
+                signal_count["overbought"] += 1
+            elif latest_rsi < 30:
+                signal_count["oversold"] += 1
+
+        rsi_report = "\n".join([f"  • RSI({p}): {rsi_values[p]:.2f}" for p in RSI_PERIODS])
+        message = f"[{ticker}]\n{rsi_report}"
+
+        if signal_count["oversold"] >= 2:
+            message += "\n⛔ 과매도 신호 감지 (2개 이상)"
+            send_discord_message(f"📉 {ticker}: 과매도 RSI 감지\n{rsi_report}")
+        elif signal_count["overbought"] >= 2:
+            message += "\n🚀 과매수 신호 감지 (2개 이상)"
+            send_discord_message(f"📈 {ticker}: 과매수 RSI 감지\n{rsi_report}")
 
         return message
     except Exception as e:
         return f"❌ {ticker}: 에러 발생 - {str(e)}"
 
 def main():
-    kst = timezone(timedelta(hours=9))  # UTC+9
+    kst = timezone(timedelta(hours=9))
     now = datetime.now(kst)
     print(f"\n📅 현재 시간 (KST): {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
     send_discord_message("--------------------------------------\n")
-    send_discord_message(f"\n\n\n📅 현재 시간 (KST): {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
-    print("🔍 종목별 RSI 분석 시작")
+    send_discord_message(f"📅 RSI 분석 시작 (KST 기준): {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
+
     for ticker in TICKERS:
         result = analyze_ticker(ticker)
         print(result)
