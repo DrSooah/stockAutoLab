@@ -47,10 +47,10 @@ def analyze_ticker(ticker):
         rsi_report = "\n".join([f"  • RSI({p}): {rsi_values[p]:.2f}" for p in RSI_PERIODS])
         message = f"[{ticker}]\n{rsi_report}"
 
-        if signal_count["oversold"] >= 2:
+        if signal_count["oversold"] >= 1:
             message += "\n⛔ 과매도 신호 감지 (2개 이상)"
             send_discord_message(f"📉 {ticker}: 과매도 RSI 감지\n{rsi_report}")
-        elif signal_count["overbought"] >= 2:
+        elif signal_count["overbought"] >= 1:
             message += "\n🚀 과매수 신호 감지 (2개 이상)"
             send_discord_message(f"📈 {ticker}: 과매수 RSI 감지\n{rsi_report}")
 
