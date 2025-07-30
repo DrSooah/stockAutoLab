@@ -3,7 +3,7 @@ import requests
 from datetime import datetime, timedelta, timezone
 
 # ===== 설정 =====
-TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW", "PLTW", "NVDW", "XDTE", "QDTE"]  # 분석할 종목 리스트
+TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW", "PLTW", "NVDW", "XDTE", "QDTE", "VZ", "PFE", "JEPQ", "CVX", "XOVR"]  # 분석할 종목 리스트
 WEBHOOK_URL = "https://discord.com/api/webhooks/1399780317254127797/xi1lBDb981_I5dALDLkqAxnYKR9_W_Up6u2LntUppc214_Uwun0gStaorJZo1Z91BaQc"
 RSI_PERIOD = 14
 # ===============
