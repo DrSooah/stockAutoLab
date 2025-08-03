@@ -3,7 +3,12 @@ import requests
 from datetime import datetime, timedelta, timezone
 
 # ===== 설정 =====
-TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW", "PLTW", "NVDW", "XDTE", "QDTE", "VZ", "PFE", "JEPQ", "CVX", "XOVR", "GOOW", "METW", "AMDW", "AVGW", "AMZW", "MSFW", "MSFW", "HOOW"]
+TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW", 
+           "PLTW", "NVDW", "XDTE", "QDTE", "VZ", 
+           "PFE", "JEPQ", "CVX", "XOVR", "GOOW", 
+           "METW", "AMDW", "AVGW", "AMZW", "MSFW", 
+           "MSTW", "HOOW", "UNH", "AAPW", "AMDW",
+           "AMZW", "AVGW", "BRKW"]
 WEBHOOK_URL = "https://discord.com/api/webhooks/1399780317254127797/xi1lBDb981_I5dALDLkqAxnYKR9_W_Up6u2LntUppc214_Uwun0gStaorJZo1Z91BaQc"
 RSI_PERIODS = [14]
 # ===============
@@ -71,3 +76,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
