@@ -11,7 +11,7 @@ TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW",
            "AMZW", "AVGW", "BRKW", "SCHD", "O",
            "TSLA", "U", "PLUG", "UBS", "NEE", 
            "MRK"]
-WEBHOOK_URL = "https://discord.com/api/webhooks/1399780317254127797/xi1lBDb981_I5dALDLkqAxnYKR9_W_Up6u2LntUppc214_Uwun0gStaorJZo1Z91BaQc"
+WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 RSI_PERIODS = [14]
 # ===============
 
@@ -78,5 +78,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
