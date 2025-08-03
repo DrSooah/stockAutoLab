@@ -29,8 +29,12 @@ def calculate_rsi(data, period):
     return rsi
 
 def send_discord_message(message):
+    if not WEBHOOK_URL:
+        print("❌ WEBHOOK_URL 환경변수가 설정되지 않았습니다.")
+        return
     payload = {"content": message}
     requests.post(WEBHOOK_URL, json=payload)
+
 
 def analyze_ticker(ticker):
     try:
@@ -79,6 +83,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
