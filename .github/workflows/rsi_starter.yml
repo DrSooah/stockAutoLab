@@ -2,14 +2,16 @@ name: RSI Discord Alert
 
 on:
   schedule:
-    # 15분 간격으로 22:30~05:00(KST) 동안 실행
-    - cron: '30 13 * * *'
-    - cron: '45 13 * * *'
+    - cron: '0 13 * * *'   # KST 22:00
+    - cron: '10 13 * * *'  # KST 22:10
   workflow_dispatch:
 
 jobs:
   rsi-alert:
     runs-on: ubuntu-latest
+
+    env:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
     steps:
     - name: Checkout repository
