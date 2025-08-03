@@ -1,6 +1,7 @@
 import yfinance as yf
 import requests
 from datetime import datetime, timedelta, timezone
+import os
 
 # ===== 설정 =====
 TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW", 
@@ -78,6 +79,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
