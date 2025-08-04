@@ -89,8 +89,8 @@ def analyze_ticker(ticker):
             message += "\n🚀 과매수 신호 감지"
             send_discord_message(f"📈 {ticker}: 과매수 RSI 감지\n{rsi_report}")
         else:
-            message += "\n🥝 일반"
-            send_discord_message(f"📊 {ticker}: 아무것도 아니에용\n{rsi_report}")
+            message += "\n📊 중립 구간 (과매수/과매도 아님)"
+            send_discord_message(f"📊 {ticker}: 중립 RSI 상태\n{rsi_report}")
 
         return message
 
@@ -110,5 +110,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
