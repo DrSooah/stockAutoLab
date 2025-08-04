@@ -56,9 +56,15 @@ def analyze_ticker(ticker):
             return f"⚠️ {ticker}: 종가 데이터 없음"
 
         close = data["Close"]
+
+        # ✅ 종가 시리즈 미리 전송 (앞뒤 5개)
+        close_preview = pd.concat([close.head(5), close.tail(5)])
+        preview_msg = f"📊 {ticker} 종가 샘플:\n{close_preview.to_string()}"
+        send_discord_message(preview_msg)
+
         rsi_values = {}
         signal_count = {"overbought": 0, "oversold": 0}
-        report_date = None  # 문자열이 아닌 None으로 초기화
+        report_date = None
 
         for period in RSI_PERIODS:
             rsi_series = calculate_rsi_series(close, period).dropna()
@@ -70,7 +76,6 @@ def analyze_ticker(ticker):
             latest_rsi = rsi_series.iloc[-2]
             rsi_values[period] = latest_rsi
 
-            # ✅ 여기서만 날짜 할당, Series 비교 안함
             if report_date is None:
                 report_date = rsi_series.index[-2].strftime("%Y-%m-%d")
 
@@ -122,5 +127,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
