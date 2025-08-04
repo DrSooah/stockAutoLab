@@ -100,7 +100,7 @@ def analyze_ticker(ticker):
             summary = f"📊 {ticker}: 중립 RSI 상태"
 
         send_discord_message(f"{summary}\n{rsi_report}")
-        return f"{summary}\n{rsi_report}"
+        return f"{summary}:\t\t {rsi_report}"
 
     except Exception as e:
         error_msg = f"❌ {ticker}: 에러 발생 - {str(e)}"
@@ -120,3 +120,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
