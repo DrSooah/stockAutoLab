@@ -61,19 +61,22 @@ def analyze_ticker(ticker):
 
         for period in RSI_PERIODS:
             rsi_series = calculate_rsi_series(close, period).dropna()
-            send_discord_message(f"{rsi_series}")
             if len(rsi_series) < 2:
                 rsi_values[period] = None
                 send_discord_message(f"⚠️ {ticker} - RSI({period}) 시계열 길이 부족")
                 continue
-            send_discord_message("step 01")
+
             try:
-                latest_rsi = rsi_series.iloc[-2]  # 전일 기준
+                latest_rsi = rsi_series.iloc[-2]
+                if isinstance(latest_rsi, pd.Series):
+                    latest_rsi = latest_rsi.iloc[0]  # Series인 경우 첫 번째 값 추출
+            
+                latest_rsi = float(latest_rsi)  # 명시적 변환
                 rsi_values[period] = latest_rsi
-                send_discord_message("step 02")
+            
                 if report_date is None:
                     report_date = pd.to_datetime(rsi_series.index[-2]).strftime("%Y-%m-%d")
-                send_discord_message("step 03")
+            
                 if pd.notna(latest_rsi):
                     if latest_rsi > 70:
                         signal_count["overbought"] += 1
@@ -81,17 +84,18 @@ def analyze_ticker(ticker):
                         signal_count["oversold"] += 1
                 else:
                     send_discord_message(f"⚠️ {ticker} - RSI({period}) 값이 NaN입니다.")
-
+            
             except Exception as e:
                 rsi_values[period] = None
                 send_discord_message(f"❌ {ticker} - RSI({period}) 처리 실패: {str(e)}")
-        send_discord_message("step 04")
+
+                
         rsi_report = "\n".join([
             f"  • RSI({p}) @ {report_date if report_date else 'N/A'}: {rsi_values[p]:.2f}"
             if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
             for p in RSI_PERIODS
         ])
-        send_discord_message("step 05")
+
         message = f"[{ticker}]\n{rsi_report}"
 
         if signal_count["oversold"] >= 1:
@@ -126,6 +130,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
