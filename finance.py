@@ -66,7 +66,7 @@ def analyze_ticker(ticker):
                 rsi_values[period] = None
                 send_discord_message(f"⚠️ {ticker} - RSI({period}) 시계열 길이 부족")
                 continue
-            send_message("step 01")
+            send_discord_message("step 01")
             try:
                 latest_rsi = rsi_series.iloc[-2]  # 전일 기준
                 rsi_values[period] = latest_rsi
@@ -126,5 +126,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
