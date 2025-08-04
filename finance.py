@@ -61,7 +61,7 @@ def analyze_ticker(ticker):
 
         for period in RSI_PERIODS:
             rsi_series = calculate_rsi_series(close, period).dropna()
-            send_message(f"{rsi_series}")
+            send_discord_message(f"{rsi_series}")
             if len(rsi_series) < 2:
                 rsi_values[period] = None
                 send_discord_message(f"⚠️ {ticker} - RSI({period}) 시계열 길이 부족")
@@ -70,10 +70,10 @@ def analyze_ticker(ticker):
             try:
                 latest_rsi = rsi_series.iloc[-2]  # 전일 기준
                 rsi_values[period] = latest_rsi
-                send_message("step 02")
+                send_discord_message("step 02")
                 if report_date is None:
                     report_date = pd.to_datetime(rsi_series.index[-2]).strftime("%Y-%m-%d")
-                send_message("step 03")
+                send_discord_message("step 03")
                 if pd.notna(latest_rsi):
                     if latest_rsi > 70:
                         signal_count["overbought"] += 1
@@ -85,13 +85,13 @@ def analyze_ticker(ticker):
             except Exception as e:
                 rsi_values[period] = None
                 send_discord_message(f"❌ {ticker} - RSI({period}) 처리 실패: {str(e)}")
-        send_message("step 04")
+        send_discord_message("step 04")
         rsi_report = "\n".join([
             f"  • RSI({p}) @ {report_date if report_date else 'N/A'}: {rsi_values[p]:.2f}"
             if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
             for p in RSI_PERIODS
         ])
-        send_message("step 05")
+        send_discord_message("step 05")
         message = f"[{ticker}]\n{rsi_report}"
 
         if signal_count["oversold"] >= 1:
@@ -126,4 +126,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
