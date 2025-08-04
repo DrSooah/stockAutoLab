@@ -93,9 +93,9 @@ def analyze_ticker(ticker):
 
         # 상태 판단 및 메시지 생성
         if signal_count["oversold"] >= 1:
-            summary = f"📉 {ticker}: 과매도 RSI 감지"
+            summary = f"🔴🔴🔴🔴🔴 {ticker}: 과매도 RSI 감지 🔴🔴🔴🔴🔴"
         elif signal_count["overbought"] >= 1:
-            summary = f"📈 {ticker}: 과매수 RSI 감지"
+            summary = f"🔵🔵🔵🔵🔵 {ticker}: 과매수 RSI 감지 🔵🔵🔵🔵🔵"
         else:
             summary = f"📊 {ticker}: 중립 RSI 상태"
 
@@ -120,4 +120,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
