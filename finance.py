@@ -16,17 +16,19 @@ WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 RSI_PERIODS = [14]
 # ===============
 
-def calculate_rsi(data, period):
+def calculate_rsi(data, period=14):
     delta = data['Close'].diff()
-    gain = delta.where(delta > 0, 0.0)
-    loss = -delta.where(delta < 0, 0.0)
 
-    avg_gain = gain.rolling(window=period).mean()
-    avg_loss = loss.rolling(window=period).mean()
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+
+    avg_gain = gain.ewm(alpha=1/period, min_periods=period).mean()
+    avg_loss = loss.ewm(alpha=1/period, min_periods=period).mean()
 
     rs = avg_gain / avg_loss
     rsi = 100 - (100 / (1 + rs))
     return rsi
+
 
 def send_discord_message(message):
     if not WEBHOOK_URL:
@@ -83,6 +85,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
