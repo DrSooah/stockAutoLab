@@ -2,7 +2,7 @@ import subprocess
 import sys
 
 # 필요한 패키지 설치 시도
-required_modules = ["yfinance", "requests"]
+required_modules = ["yfinance", "requests", "pandas"]
 for module in required_modules:
     try:
         __import__(module)
@@ -13,6 +13,7 @@ for module in required_modules:
 # 이후 안전하게 import
 import yfinance as yf
 import requests
+import pandas as pd
 from datetime import datetime, timedelta, timezone
 import os
 
@@ -127,6 +128,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
