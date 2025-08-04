@@ -69,7 +69,10 @@ def analyze_ticker(ticker):
 
             latest_rsi = rsi_series.iloc[-2]
             rsi_values[period] = latest_rsi
-            date = rsi_series.index[-2].strftime("%Y-%m-%d")
+
+            # 날짜는 이 안에서만 설정
+            if date == "N/A":
+                date = rsi_series.index[-2].strftime("%Y-%m-%d")
 
             if latest_rsi > 70:
                 signal_count["overbought"] += 1
