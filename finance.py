@@ -50,7 +50,7 @@ def send_discord_message(message):
 
 def analyze_ticker(ticker):
     try:
-        data = yf.download(ticker, period="2mo", interval="1d", progress=False, auto_adjust=False)
+        data = yf.download(ticker, period="3mo", interval="1d", progress=False, auto_adjust=False)
 
         if data.empty or "Close" not in data:
             return f"⚠️ {ticker}: 종가 데이터 없음"
@@ -95,6 +95,7 @@ def analyze_ticker(ticker):
         return message
 
     except Exception as e:
+        send_discord_message(f"❌ {ticker}: 에러 발생 - {str(e)}")
         return f"❌ {ticker}: 에러 발생 - {str(e)}"
 
 def main():
@@ -112,6 +113,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
