@@ -58,33 +58,31 @@ def analyze_ticker(ticker):
         close = data["Close"]
         rsi_values = {}
         signal_count = {"overbought": 0, "oversold": 0}
-        date = "N/A"
+        report_date = None  # 문자열이 아닌 None으로 초기화
 
         for period in RSI_PERIODS:
             rsi_series = calculate_rsi_series(close, period).dropna()
 
-            # ✅ 길이 체크 먼저: 2개 미만이면 그냥 넘어감
             if len(rsi_series) < 2:
                 rsi_values[period] = None
                 continue
 
-            # ✅ 길이 충분할 때만 접근
             latest_rsi = rsi_series.iloc[-2]
             rsi_values[period] = latest_rsi
 
-            if date == "N/A":  # ✅ 이 조건도 rsi_series 길이 충분할 때만 실행
-                try:
-                    date = rsi_series.index[-2].strftime("%Y-%m-%d")
-                except:
-                    date = "N/A"
+            # ✅ 여기서만 날짜 할당, Series 비교 안함
+            if report_date is None:
+                report_date = rsi_series.index[-2].strftime("%Y-%m-%d")
 
             if latest_rsi > 70:
                 signal_count["overbought"] += 1
             elif latest_rsi < 30:
                 signal_count["oversold"] += 1
 
+        date_str = report_date if report_date else "N/A"
+
         rsi_report = "\n".join([
-            f"  • RSI({p}) @ {date}: {rsi_values[p]:.2f}" if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
+            f"  • RSI({p}) @ {date_str}: {rsi_values[p]:.2f}" if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
             for p in RSI_PERIODS
         ])
 
@@ -108,6 +106,7 @@ def analyze_ticker(ticker):
         return error_msg
 
 
+
 def main():
     kst = timezone(timedelta(hours=9))
     now = datetime.now(kst)
@@ -123,4 +122,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
