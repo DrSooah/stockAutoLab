@@ -16,17 +16,14 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta, timezone
 import os
-import io
 
 # ===== 설정 =====
-TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW", 
-           "PLTW", "NVDW", "XDTE", "QDTE", "VZ", 
-           "PFE", "JEPQ", "CVX", "XOVR", "GOOW", 
-           "METW", "AMDW", "AVGW", "AMZW", "MSFW", 
-           "MSTW", "HOOW", "UNH", "AAPW", "AMDW",
-           "AMZW", "AVGW", "BRKW", "SCHD", "O",
-           "TSLA", "U", "PLUG", "UBS", "NEE", 
-           "MRK", "MSTY"]
+TICKERS = [
+    "TSLY", "CONY", "TSLW", "NFLW", "COIW", "PLTW", "NVDW", "XDTE", "QDTE",
+    "VZ", "PFE", "JEPQ", "CVX", "XOVR", "GOOW", "METW", "AMDW", "AVGW",
+    "AMZW", "MSFW", "MSTW", "HOOW", "UNH", "AAPW", "BRKW", "SCHD", "O",
+    "TSLA", "U", "PLUG", "UBS", "NEE", "MRK", "MSTY"
+]
 WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 RSI_PERIODS = [14]
 # ===============
@@ -40,7 +37,6 @@ def calculate_rsi_series(close, period):
     rs = avg_gain / avg_loss
     return 100 - (100 / (1 + rs))
 
-
 def send_discord_message(message):
     if not WEBHOOK_URL:
         print("❌ WEBHOOK_URL 환경변수가 설정되지 않았습니다.")
@@ -53,8 +49,7 @@ def send_discord_message(message):
 
 def analyze_ticker(ticker):
     try:
-        send_discord_message(f"TEST 001")
-        data = yf.download(ticker, period="2mo", interval="1d", progress=False, auto_adjust=False)
+        data = yf.download(ticker, period="3mo", interval="1d", progress=False, auto_adjust=False)
 
         if data.empty or "Close" not in data:
             return f"⚠️ {ticker}: 종가 데이터 없음"
@@ -64,38 +59,41 @@ def analyze_ticker(ticker):
         signal_count = {"overbought": 0, "oversold": 0}
         report_date = None
 
-        send_discord_message(f"TEST 002")
         for period in RSI_PERIODS:
             rsi_series = calculate_rsi_series(close, period).dropna()
 
             if len(rsi_series) < 2:
                 rsi_values[period] = None
+                send_discord_message(f"⚠️ {ticker} - RSI({period}) 시계열 길이 부족")
                 continue
 
-            latest_rsi = rsi_series.iloc[-2]
-            rsi_values[period] = latest_rsi
+            try:
+                latest_rsi = rsi_series.iloc[-2]  # 전일 기준
+                rsi_values[period] = latest_rsi
 
-            if report_date is None:
-                try:
+                if report_date is None:
                     report_date = pd.to_datetime(rsi_series.index[-2]).strftime("%Y-%m-%d")
-                except Exception as e:
-                    send_discord_message(f"❌ {ticker} - 날짜 처리 실패: {str(e)}")
-                    report_date = "N/A"
 
-            if latest_rsi > 70:
-                signal_count["overbought"] += 1
-            elif latest_rsi < 30:
-                signal_count["oversold"] += 1
+                if pd.notna(latest_rsi):
+                    if latest_rsi > 70:
+                        signal_count["overbought"] += 1
+                    elif latest_rsi < 30:
+                        signal_count["oversold"] += 1
+                else:
+                    send_discord_message(f"⚠️ {ticker} - RSI({period}) 값이 NaN입니다.")
 
-        send_discord_message(f"TEST 003")
+            except Exception as e:
+                rsi_values[period] = None
+                send_discord_message(f"❌ {ticker} - RSI({period}) 처리 실패: {str(e)}")
+
         rsi_report = "\n".join([
-            f"  • RSI({p}) @ {report_date}: {rsi_values[p]:.2f}" if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
+            f"  • RSI({p}) @ {report_date if report_date else 'N/A'}: {rsi_values[p]:.2f}"
+            if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
             for p in RSI_PERIODS
         ])
 
         message = f"[{ticker}]\n{rsi_report}"
-        send_discord_message(f"TEST 004")
-        
+
         if signal_count["oversold"] >= 1:
             message += "\n⛔ 과매도 신호 감지"
             send_discord_message(f"📉 {ticker}: 과매도 RSI 감지\n{rsi_report}")
@@ -113,7 +111,6 @@ def analyze_ticker(ticker):
         send_discord_message(error_msg)
         return error_msg
 
-
 def main():
     kst = timezone(timedelta(hours=9))
     now = datetime.now(kst)
@@ -129,11 +126,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
