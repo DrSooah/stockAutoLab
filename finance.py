@@ -16,6 +16,7 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta, timezone
 import os
+import io
 
 # ===== 설정 =====
 TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW", 
@@ -135,6 +136,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
