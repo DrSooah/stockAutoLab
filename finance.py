@@ -105,11 +105,13 @@ def main():
     send_discord_message(f"📅 RSI 분석 시작 (KST 기준): {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
 
     for ticker in TICKERS:
+        print(f"🔍 {ticker} 분석 중...", end=': ')
         result = analyze_ticker(ticker)
         print(result)
 
 if __name__ == "__main__":
     main()
+
 
 
 
