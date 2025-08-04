@@ -106,11 +106,13 @@ def main():
 
     for ticker in TICKERS:
         print(f"🔍 {ticker} 분석 중...", end=': ')
+        send_discord_message(f"🔍 {ticker} 분석 중...")
         result = analyze_ticker(ticker)
         print(result)
 
 if __name__ == "__main__":
     main()
+
 
 
 
