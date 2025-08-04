@@ -58,9 +58,16 @@ def analyze_ticker(ticker):
 
         close = data["Close"]
 
-        # ✅ 종가 시리즈 미리 전송 (앞뒤 5개)
-        close_preview = pd.concat([close.head(5), close.tail(5)])
-        preview_msg = f"📊 {ticker} 종가 샘플:\n{close_preview.to_string()}"
+        # ✅ 종가 전체 시리즈 Discord 전송
+        buffer = io.StringIO()
+        close.to_string(buf=buffer)
+        close_text = buffer.getvalue()
+
+        # 메시지 길이 제한 (Discord 2000자 이내)
+        if len(close_text) > 1900:
+            close_text = close_text[:1900] + "\n...(생략됨)"
+
+        preview_msg = f"📊 {ticker} 전체 종가:\n{close_text}"
         send_discord_message(preview_msg)
 
         rsi_values = {}
@@ -128,6 +135,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
