@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import os
 
 # 필요한 패키지 설치 시도
 required_modules = ["yfinance", "requests", "pandas"]
@@ -10,20 +11,20 @@ for module in required_modules:
         print(f"📦 '{module}' 모듈이 설치되어 있지 않습니다. 설치를 시도합니다...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", module])
 
-# 이후 안전하게 import
+# 안전하게 import
 import yfinance as yf
 import requests
 import pandas as pd
 from datetime import datetime, timedelta, timezone
-import os
 
 # ===== 설정 =====
-TICKERS = [
-    "TSLY", "CONY", "TSLW", "NFLW", "COIW", "PLTW", "NVDW", "XDTE", "QDTE",
-    "VZ", "PFE", "JEPQ", "CVX", "XOVR", "GOOW", "METW", "AMDW", "AVGW",
-    "AMZW", "MSFW", "MSTW", "HOOW", "UNH", "AAPW", "BRKW", "SCHD", "O",
-    "TSLA", "U", "PLUG", "UBS", "NEE", "MRK", "MSTY"
-]
+TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW", 
+           "PLTW", "NVDW", "XDTE", "QDTE", "VZ", 
+           "PFE", "JEPQ", "CVX", "XOVR", "GOOW", 
+           "METW", "AMDW", "AVGW", "AMZW", "MSFW", 
+           "MSTW", "HOOW", "UNH", "AAPW", "BRKW", 
+           "SCHD", "O", "TSLA", "U", "PLUG", "UBS", 
+           "NEE", "MRK", "MSTY"]
 WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 RSI_PERIODS = [14]
 # ===============
@@ -49,7 +50,7 @@ def send_discord_message(message):
 
 def analyze_ticker(ticker):
     try:
-        data = yf.download(ticker, period="3mo", interval="1d", progress=False, auto_adjust=False)
+        data = yf.download(ticker, period="2mo", interval="1d", progress=False, auto_adjust=False)
 
         if data.empty or "Close" not in data:
             return f"⚠️ {ticker}: 종가 데이터 없음"
@@ -57,26 +58,17 @@ def analyze_ticker(ticker):
         close = data["Close"]
         rsi_values = {}
         signal_count = {"overbought": 0, "oversold": 0}
-        report_date = None
 
         for period in RSI_PERIODS:
-            rsi_series = calculate_rsi_series(close, period).dropna()
-            if len(rsi_series) < 2:
-                rsi_values[period] = None
-                send_discord_message(f"⚠️ {ticker} - RSI({period}) 시계열 길이 부족")
-                continue
-
             try:
+                rsi_series = calculate_rsi_series(close, period).dropna()
+                if len(rsi_series) < 2:
+                    rsi_values[period] = None
+                    continue
+
                 latest_rsi = rsi_series.iloc[-2]
-                if isinstance(latest_rsi, pd.Series):
-                    latest_rsi = latest_rsi.iloc[0]  # Series인 경우 첫 번째 값 추출
-            
-                latest_rsi = float(latest_rsi)  # 명시적 변환
                 rsi_values[period] = latest_rsi
-            
-                if report_date is None:
-                    report_date = pd.to_datetime(rsi_series.index[-2]).strftime("%Y-%m-%d")
-            
+
                 if pd.notna(latest_rsi):
                     if latest_rsi > 70:
                         signal_count["overbought"] += 1
@@ -84,29 +76,24 @@ def analyze_ticker(ticker):
                         signal_count["oversold"] += 1
                 else:
                     send_discord_message(f"⚠️ {ticker} - RSI({period}) 값이 NaN입니다.")
-            
+
             except Exception as e:
                 rsi_values[period] = None
                 send_discord_message(f"❌ {ticker} - RSI({period}) 처리 실패: {str(e)}")
 
-                
-        rsi_report = "\n".join([
-            f"  • RSI({p}): {rsi_values[p]:.2f}" if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
+        rsi_report = " | ".join([
+            f"RSI({p}): {rsi_values[p]:>5.2f}" if rsi_values[p] is not None else f"RSI({p}): 계산 불가"
             for p in RSI_PERIODS
         ])
 
-        message = f"[{ticker}]\n{rsi_report}"
-
         if signal_count["oversold"] >= 1:
-            message += "\n⛔ 과매도 신호 감지"
-            send_discord_message(f"📉 {ticker}: 과매도 RSI 감지\n{rsi_report}")
+            message = f"📉 {ticker:<6} | 과매도 | {rsi_report}"
         elif signal_count["overbought"] >= 1:
-            message += "\n🚀 과매수 신호 감지"
-            send_discord_message(f"📈 {ticker}: 과매수 RSI 감지\n{rsi_report}")
+            message = f"📈 {ticker:<6} | 과매수 | {rsi_report}"
         else:
-            message += "\n📊 중립 구간 (과매수/과매도 아님)"
-            send_discord_message(f"📊 {ticker}: 중립 RSI 상태\n{rsi_report}")
+            message = f"📊 {ticker:<6} |  중립  | {rsi_report}"
 
+        send_discord_message(message)
         return message
 
     except Exception as e:
@@ -118,8 +105,8 @@ def main():
     kst = timezone(timedelta(hours=9))
     now = datetime.now(kst)
     print(f"\n📅 현재 시간 (KST): {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
-    send_discord_message("--------------------------------------\n")
-    send_discord_message(f"📅 RSI 분석 시작 (KST 기준): {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
+    send_discord_message("--------------------------------------")
+    send_discord_message(f"📅 RSI 분석 시작 (KST 기준): {now.strftime('%Y-%m-%d %H:%M:%S')}")
 
     for ticker in TICKERS:
         print(f"🔍 {ticker} 분석 중...", end=' ')
@@ -129,8 +116,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
