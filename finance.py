@@ -50,7 +50,7 @@ def send_discord_message(message):
 
 def analyze_ticker(ticker):
     try:
-        data = yf.download(ticker, period="3mo", interval="1d", progress=False, auto_adjust=False)
+        data = yf.download(ticker, period="2mo", interval="1d", progress=False, auto_adjust=False)
 
         if data.empty or "Close" not in data:
             return f"⚠️ {ticker}: 종가 데이터 없음"
@@ -63,16 +63,20 @@ def analyze_ticker(ticker):
         for period in RSI_PERIODS:
             rsi_series = calculate_rsi_series(close, period).dropna()
 
+            # ✅ 길이 체크 먼저: 2개 미만이면 그냥 넘어감
             if len(rsi_series) < 2:
                 rsi_values[period] = None
                 continue
 
+            # ✅ 길이 충분할 때만 접근
             latest_rsi = rsi_series.iloc[-2]
             rsi_values[period] = latest_rsi
 
-            # 날짜는 여기서만 할당 (한 번만)
-            if date == "N/A":
-                date = rsi_series.index[-2].strftime("%Y-%m-%d")
+            if date == "N/A":  # ✅ 이 조건도 rsi_series 길이 충분할 때만 실행
+                try:
+                    date = rsi_series.index[-2].strftime("%Y-%m-%d")
+                except:
+                    date = "N/A"
 
             if latest_rsi > 70:
                 signal_count["overbought"] += 1
@@ -103,6 +107,7 @@ def analyze_ticker(ticker):
         send_discord_message(error_msg)
         return error_msg
 
+
 def main():
     kst = timezone(timedelta(hours=9))
     now = datetime.now(kst)
@@ -118,3 +123,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
