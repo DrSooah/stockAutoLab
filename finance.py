@@ -91,8 +91,7 @@ def analyze_ticker(ticker):
 
                 
         rsi_report = "\n".join([
-            f"  • RSI({p}) @ {report_date if report_date else 'N/A'}: {rsi_values[p]:.2f}"
-            if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
+            f"  • RSI({p}): {rsi_values[p]:.2f}" if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
             for p in RSI_PERIODS
         ])
 
@@ -130,6 +129,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
