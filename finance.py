@@ -58,6 +58,7 @@ def analyze_ticker(ticker):
         close = data["Close"]
         rsi_values = {}
         signal_count = {"overbought": 0, "oversold": 0}
+        date = "N/A"
 
         for period in RSI_PERIODS:
             rsi_series = calculate_rsi_series(close, period).dropna()
@@ -66,15 +67,15 @@ def analyze_ticker(ticker):
                 rsi_values[period] = None
                 continue
 
-            latest_rsi = rsi_series.iloc[-2]  # 전일 기준
+            latest_rsi = rsi_series.iloc[-2]
             rsi_values[period] = latest_rsi
+            date = rsi_series.index[-2].strftime("%Y-%m-%d")
 
             if latest_rsi > 70:
                 signal_count["overbought"] += 1
             elif latest_rsi < 30:
                 signal_count["oversold"] += 1
 
-        date = rsi_series.index[-2].strftime("%Y-%m-%d") if rsi_series is not None else "N/A"
         rsi_report = "\n".join([
             f"  • RSI({p}) @ {date}: {rsi_values[p]:.2f}" if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
             for p in RSI_PERIODS
@@ -95,8 +96,9 @@ def analyze_ticker(ticker):
         return message
 
     except Exception as e:
-        send_discord_message(f"❌ {ticker}: 에러 발생 - {str(e)}")
-        return f"❌ {ticker}: 에러 발생 - {str(e)}"
+        error_msg = f"❌ {ticker}: 에러 발생 - {str(e)}"
+        send_discord_message(error_msg)
+        return error_msg
 
 def main():
     kst = timezone(timedelta(hours=9))
@@ -106,16 +108,10 @@ def main():
     send_discord_message(f"📅 RSI 분석 시작 (KST 기준): {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
 
     for ticker in TICKERS:
-        print(f"🔍 {ticker} 분석 중...", end=': ')
+        print(f"🔍 {ticker} 분석 중...", end=' ')
         send_discord_message(f"🔍 {ticker} 분석 중...")
         result = analyze_ticker(ticker)
         print(result)
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
