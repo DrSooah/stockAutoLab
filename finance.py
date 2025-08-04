@@ -88,6 +88,9 @@ def analyze_ticker(ticker):
         elif signal_count["overbought"] >= 1:
             message += "\n🚀 과매수 신호 감지"
             send_discord_message(f"📈 {ticker}: 과매수 RSI 감지\n{rsi_report}")
+        else:
+            message += '\n🥝 일반"
+            send_discord_message(f"📊 {ticker}: 아무것도 아니에용\n{rsi_report}")
 
         return message
 
@@ -107,3 +110,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
