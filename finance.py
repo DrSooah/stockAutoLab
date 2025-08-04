@@ -53,6 +53,7 @@ def send_discord_message(message):
 
 def analyze_ticker(ticker):
     try:
+        send_discord_message(f"TEST 001")
         data = yf.download(ticker, period="2mo", interval="1d", progress=False, auto_adjust=False)
 
         if data.empty or "Close" not in data:
@@ -63,6 +64,7 @@ def analyze_ticker(ticker):
         signal_count = {"overbought": 0, "oversold": 0}
         report_date = None
 
+        send_discord_message(f"TEST 002")
         for period in RSI_PERIODS:
             rsi_series = calculate_rsi_series(close, period).dropna()
 
@@ -85,13 +87,15 @@ def analyze_ticker(ticker):
             elif latest_rsi < 30:
                 signal_count["oversold"] += 1
 
+        send_discord_message(f"TEST 003")
         rsi_report = "\n".join([
             f"  • RSI({p}) @ {report_date}: {rsi_values[p]:.2f}" if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
             for p in RSI_PERIODS
         ])
 
         message = f"[{ticker}]\n{rsi_report}"
-
+        send_discord_message(f"TEST 004")
+        
         if signal_count["oversold"] >= 1:
             message += "\n⛔ 과매도 신호 감지"
             send_discord_message(f"📉 {ticker}: 과매도 RSI 감지\n{rsi_report}")
@@ -125,6 +129,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
