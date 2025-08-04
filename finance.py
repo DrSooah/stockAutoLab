@@ -11,7 +11,7 @@ TICKERS = ["TSLY", "CONY", "TSLW", "NFLW", "COIW",
            "MSTW", "HOOW", "UNH", "AAPW", "AMDW",
            "AMZW", "AVGW", "BRKW", "SCHD", "O",
            "TSLA", "U", "PLUG", "UBS", "NEE", 
-           "MRK"]
+           "MRK", "MSTY"]
 WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 RSI_PERIODS = [14]
 # ===============
@@ -83,6 +83,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
