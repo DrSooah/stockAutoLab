@@ -58,6 +58,7 @@ def analyze_ticker(ticker):
         close = data["Close"]
         rsi_values = {}
         signal_count = {"overbought": 0, "oversold": 0}
+        report_date = None
 
         for period in RSI_PERIODS:
             try:
@@ -68,6 +69,13 @@ def analyze_ticker(ticker):
 
                 latest_rsi = rsi_series.iloc[-2]
                 rsi_values[period] = latest_rsi
+
+                if report_date is None:
+                    try:
+                        report_date = pd.to_datetime(rsi_series.index[-2]).strftime("%Y-%m-%d")
+                    except Exception as e:
+                        send_discord_message(f"❌ {ticker} - 날짜 처리 실패: {str(e)}")
+                        report_date = "N/A"
 
                 if pd.notna(latest_rsi):
                     if latest_rsi > 70:
@@ -81,17 +89,17 @@ def analyze_ticker(ticker):
                 rsi_values[period] = None
                 send_discord_message(f"❌ {ticker} - RSI({period}) 처리 실패: {str(e)}")
 
-        rsi_report = " | ".join([
-            f"RSI({p}): {rsi_values[p]:>5.2f}" if rsi_values[p] is not None else f"RSI({p}): 계산 불가"
+        rsi_report = "\n".join([
+            f"  • RSI({p}): {rsi_values[p]:.2f}" if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
             for p in RSI_PERIODS
         ])
 
         if signal_count["oversold"] >= 1:
-            message = f"📉 {ticker:<6} | 과매도 | {rsi_report}"
+            message = f"📉 {ticker}: 과매도 RSI 감지\n{rsi_report}"
         elif signal_count["overbought"] >= 1:
-            message = f"📈 {ticker:<6} | 과매수 | {rsi_report}"
+            message = f"📈 {ticker}: 과매수 RSI 감지\n{rsi_report}"
         else:
-            message = f"📊 {ticker:<6} |  중립  | {rsi_report}"
+            message = f"📊 {ticker}: 중립 RSI 상태\n{rsi_report}"
 
         send_discord_message(message)
         return message
