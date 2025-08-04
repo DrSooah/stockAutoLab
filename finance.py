@@ -40,6 +40,7 @@ def calculate_rsi_series(close, period):
     rs = avg_gain / avg_loss
     return 100 - (100 / (1 + rs))
 
+
 def send_discord_message(message):
     if not WEBHOOK_URL:
         print("❌ WEBHOOK_URL 환경변수가 설정되지 않았습니다.")
@@ -58,19 +59,6 @@ def analyze_ticker(ticker):
             return f"⚠️ {ticker}: 종가 데이터 없음"
 
         close = data["Close"]
-
-        # ✅ 종가 전체 시리즈 Discord 전송
-        buffer = io.StringIO()
-        close.to_string(buf=buffer)
-        close_text = buffer.getvalue()
-
-        # 메시지 길이 제한 (Discord 2000자 이내)
-        if len(close_text) > 1900:
-            close_text = close_text[:1900] + "\n...(생략됨)"
-
-        preview_msg = f"📊 {ticker} 전체 종가:\n{close_text}"
-        send_discord_message(preview_msg)
-
         rsi_values = {}
         signal_count = {"overbought": 0, "oversold": 0}
         report_date = None
@@ -86,17 +74,19 @@ def analyze_ticker(ticker):
             rsi_values[period] = latest_rsi
 
             if report_date is None:
-                report_date = rsi_series.index[-2].strftime("%Y-%m-%d")
+                try:
+                    report_date = pd.to_datetime(rsi_series.index[-2]).strftime("%Y-%m-%d")
+                except Exception as e:
+                    send_discord_message(f"❌ {ticker} - 날짜 처리 실패: {str(e)}")
+                    report_date = "N/A"
 
             if latest_rsi > 70:
                 signal_count["overbought"] += 1
             elif latest_rsi < 30:
                 signal_count["oversold"] += 1
 
-        date_str = report_date if report_date else "N/A"
-
         rsi_report = "\n".join([
-            f"  • RSI({p}) @ {date_str}: {rsi_values[p]:.2f}" if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
+            f"  • RSI({p}) @ {report_date}: {rsi_values[p]:.2f}" if rsi_values[p] is not None else f"  • RSI({p}): 계산 불가"
             for p in RSI_PERIODS
         ])
 
@@ -120,7 +110,6 @@ def analyze_ticker(ticker):
         return error_msg
 
 
-
 def main():
     kst = timezone(timedelta(hours=9))
     now = datetime.now(kst)
@@ -136,6 +125,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
